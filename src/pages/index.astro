@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const reports = await getCollection('reports');
+const featured = reports[0];
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Тропа и контекст — походные отчёты">
+  <main class="wrap">
+    <section class="intro">
+      <p class="eyebrow">Походы · маршруты · заметки</p>
+      <h1>Истории, которые<br />не теряются в ленте.</h1>
+      <p class="summary">Маршруты, подробные отчёты и вещи, которые проверены на тропе.</p>
+      <a class="text-link" href={`${base}routes/`}>Смотреть маршруты <span aria-hidden="true">→</span></a>
+    </section>
+
+    {featured && (
+      <section class="featured" aria-labelledby="featured-heading">
+        <a class="feature-image" href={`${base}routes/${featured.id}/`}>
+          <img src={`${base}${featured.data.cover.replace(/^\//, '')}`} alt="Схема спортивного маршрута по Сванетии" />
+        </a>
+        <div class="feature-copy">
+          <p class="eyebrow">{featured.data.region} · {featured.data.date}</p>
+          <h2 id="featured-heading"><a href={`${base}routes/${featured.id}/`}>{featured.data.title}</a></h2>
+          <p>{featured.data.description}</p>
+          <div class="quick-facts"><span>{featured.data.distanceKm} км</span><span>+{featured.data.elevationGainM.toLocaleString('ru-RU')} м</span><span>{featured.data.duration}</span></div>
+          <a class="text-link" href={`${base}routes/${featured.id}/`}>Читать отчёт <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    )}
+  </main>
+</BaseLayout>
+
+<style>
+  .intro { padding: 78px 0 70px; }
+  .eyebrow { margin: 0 0 15px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  h1, h2 { font-family: var(--serif); font-weight: 500; letter-spacing: -.035em; }
+  h1 { max-width: 760px; margin: 0; font-size: clamp(46px, 7vw, 82px); line-height: 1.06; }
+  .summary { max-width: 510px; margin: 20px 0; color: #52635b; font-family: var(--serif); font-size: 20px; }
+  .text-link { color: var(--green); font-size: 14px; font-weight: 700; text-decoration: none; }
+  .text-link span { margin-left: 5px; }
+  .featured { display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 54px; padding: 30px 0 78px; border-top: 1px solid var(--line); }
+  .feature-image { display: block; overflow: hidden; background: #d7dfcf; }
+  .feature-image img { width: 100%; aspect-ratio: 1.45; object-fit: cover; transition: transform .35s; }
+  .feature-image:hover img { transform: scale(1.025); }
+  h2 { margin: 0 0 15px; font-size: clamp(30px, 4vw, 46px); line-height: 1.16; }
+  h2 a { text-decoration: none; }
+  .feature-copy > p:not(.eyebrow) { color: var(--muted); }
+  .quick-facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 23px 0; color: var(--green); font-size: 13px; font-weight: 700; }
+  @media (max-width: 700px) {
+    .intro { padding: 54px 0 48px; }
+    .featured { grid-template-columns: 1fr; gap: 25px; padding-bottom: 52px; }
+    .feature-image img { aspect-ratio: 1.45; }
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const reports = await getCollection('reports');
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Маршруты — Тропа и контекст" description="Каталог походных маршрутов и отчётов.">
+  <main class="wrap page">
+    <p class="eyebrow">Каталог</p>
+    <h1>Маршруты и отчёты</h1>
+    <p class="intro">Подробности маршрута, впечатления и полезная информация в одном месте.</p>
+    <div class="report-list">
+      {reports.map((report) => (
+        <article class="report">
+          <a class="thumb" href={`${base}routes/${report.id}/`}><img src={`${base}${report.data.cover.replace(/^\//, '')}`} alt="" /></a>
+          <div>
+            <p class="eyebrow">{report.data.region} · {report.data.date}</p>
+            <h2><a href={`${base}routes/${report.id}/`}>{report.data.title}</a></h2>
+            <p>{report.data.description}</p>
+            <span class="facts">{report.data.distanceKm} км · +{report.data.elevationGainM.toLocaleString('ru-RU')} м · {report.data.duration}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .page { padding: 65px 0 90px; }
+  .eyebrow { margin: 0 0 9px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  h1, h2 { font-family: var(--serif); font-weight: 500; letter-spacing: -.025em; }
+  h1 { margin: 0; font-size: clamp(38px, 6vw, 64px); line-height: 1.1; }
+  .intro { max-width: 550px; margin: 14px 0 42px; color: var(--muted); font-family: var(--serif); font-size: 19px; }
+  .report-list { border-top: 1px solid var(--line); }
+  .report { display: grid; grid-template-columns: 230px 1fr; gap: 28px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+  .thumb img { width: 100%; aspect-ratio: 1.45; object-fit: cover; }
+  h2 { margin: 0 0 8px; font-size: 27px; line-height: 1.2; }
+  h2 a { text-decoration: none; }
+  .report div > p:not(.eyebrow) { margin: 0 0 10px; color: var(--muted); }
+  .facts { color: var(--green); font-size: 12px; font-weight: 700; }
+  @media (max-width: 600px) { .page { padding-top: 46px; } .report { grid-template-columns: 1fr; gap: 16px; } .thumb img { aspect-ratio: 1.7; } }
+</style>

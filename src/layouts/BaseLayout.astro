@@ -1,0 +1,81 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Маршрутные заметки, походные отчёты и полезные детали.' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f5f6f1" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="wrap topbar">
+      <a class="brand" href={base}><span class="brand-mark">Т</span>ТРОПА И КОНТЕКСТ</a>
+      <nav aria-label="Основная навигация">
+        <a href={`${base}routes/`}>Маршруты</a>
+        <a href={`${base}routes/`}>Отчёты</a>
+        <a href={base}>Снаряжение</a>
+        <a href={base}>Обо мне</a>
+      </nav>
+    </header>
+    <slot />
+    <footer class="wrap footer">
+      <span>Походный журнал</span>
+      <a href={`${base}routes/`}>Все маршруты <span aria-hidden="true">→</span></a>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    font-family: 'DM Sans', Arial, sans-serif;
+    color: #192b27;
+    background: #f5f6f1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    --ink: #192b27;
+    --muted: #61716b;
+    --paper: #f5f6f1;
+    --white: #fff;
+    --line: #dce2da;
+    --green: #285c4a;
+    --lime: #d7ed83;
+    --rust: #bd563d;
+    --serif: 'Literata', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-size: 16px; line-height: 1.65; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .wrap { width: min(1160px, calc(100% - 48px)); margin-inline: auto; }
+  .topbar { min-height: 72px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+  .brand { font-size: 14px; font-weight: 700; letter-spacing: .02em; text-decoration: none; }
+  .brand-mark { display: inline-grid; width: 30px; height: 30px; place-items: center; margin-right: 10px; background: var(--green); color: white; }
+  nav { display: flex; gap: 28px; }
+  nav a { color: #465851; font-size: 14px; text-decoration: none; }
+  nav a:hover, .footer a:hover { color: var(--rust); }
+  .footer { min-height: 86px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .footer a { color: var(--green); font-weight: 700; text-decoration: none; }
+  @media (max-width: 640px) {
+    .wrap { width: min(100% - 36px, 540px); }
+    .topbar { min-height: 62px; }
+    nav { gap: 13px; }
+    nav a { font-size: 12px; }
+    nav a:nth-child(n+3) { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
