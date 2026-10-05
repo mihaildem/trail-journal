@@ -102,6 +102,6 @@ draftSections: ["Дневник прохождения", "Выводы"]
 
 ## Что ещё почитать
 
-- [Все маршруты по Кавказу](../../routes/)
-- [Снаряжение для этого похода](../../)
+- [Все маршруты по Кавказу](https://mihaildem.github.io/trail-journal/routes/)
+- [Снаряжение для этого похода](https://mihaildem.github.io/trail-journal/)
 - [Задать вопрос автору в Telegram](https://t.me/kovinov/665)

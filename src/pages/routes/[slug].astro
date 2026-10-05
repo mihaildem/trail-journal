@@ -8,39 +8,37 @@ export async function getStaticPaths() {
 }
 
 const { report } = Astro.props;
-const { Content } = await render(report);
+const { Content, headings } = await render(report);
 const { data } = report;
-const base = import.meta.env.BASE_URL;
+const base = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
+const sections = headings.filter((heading) => heading.depth === 2);
 ---
 
 <BaseLayout title={`${data.title} — Тропа и контекст`} description={data.description}>
   <main class="wrap">
-      <div class="crumbs"><a href={base}>Главная</a><span>/</span><a href={`${base}routes/`}>Маршруты</a><span>/</span>{data.region}</div>
+    <div class="crumbs"><a href={base}>Главная</a><span>/</span><a href={`${base}routes/`}>Маршруты</a><span>/</span>{data.region}</div>
     <header class="hero">
       <div class="hero-copy">
         <p class="eyebrow">{data.region} · {data.date}</p>
         <h1>{data.title}</h1>
         <p class="dek">{data.description}</p>
-        <p class="byline">Походный журнал · {data.format ?? 'Поход'}</p>
+        <div class="byline"><span class="avatar" aria-hidden="true">Т</span><span>Походный журнал<br />{data.date}</span></div>
       </div>
-      <img class="hero-image" src={`${base}${data.cover.replace(/^\//, '')}`} alt="Схема маршрута по Сванетии" />
+      <div class="hero-art">
+        <img src={`${base}${data.cover.replace(/^\//, '')}`} alt={`Схема маршрута: ${data.route}`} />
+        <span class="art-label">{data.region} · маршрутная схема</span>
+      </div>
     </header>
     <section class="stats" aria-label="Характеристики маршрута">
-      <div><span>Расстояние</span><strong>{data.distanceKm} км</strong></div>
-      <div><span>Набор высоты</span><strong>+{data.elevationGainM.toLocaleString('ru-RU')} м</strong></div>
-      <div><span>Продолжительность</span><strong>{data.duration}</strong></div>
-      <div><span>Сложность</span><strong>{data.difficulty}</strong></div>
+      <div class="stat"><span class="stat-label">Дистанция</span><strong class="stat-value">{data.distanceKm} км</strong></div>
+      <div class="stat"><span class="stat-label">Набор высоты</span><strong class="stat-value">+{data.elevationGainM.toLocaleString('ru-RU')} м</strong></div>
+      <div class="stat"><span class="stat-label">Продолжительность</span><strong class="stat-value">{data.duration}</strong></div>
+      <div class="stat"><span class="stat-label">Формат</span><strong class="stat-value">{data.format ?? data.difficulty}</strong></div>
     </section>
     <div class="article-layout">
       <aside class="toc">
-        <p>В этом отчёте</p>
-        <a href="#маршрут-в-цифрах">Маршрут в цифрах</a>
-        <a href="#как-появился-маршрут">Как появился маршрут</a>
-        <a href="#почему-пошёл-один">Почему пошёл один</a>
-        <a href="#дневник-прохождения">Дневник прохождения</a>
-        <a href="#когда-ехать">Когда ехать</a>
-        <a href="#карта">Карта</a>
-        <a href="#важное-замечание-о-безопасности">Безопасность</a>
+        <p class="toc-title">В этом отчёте</p>
+        {sections.map((heading) => <a href={`#${heading.slug}`}>{heading.text}</a>)}
       </aside>
       <article class="prose"><Content /></article>
     </div>
@@ -48,48 +46,60 @@ const base = import.meta.env.BASE_URL;
 </BaseLayout>
 
 <style>
-  .crumbs { padding: 24px 0 12px; color: var(--muted); font-size: 13px; }
+  .crumbs { padding: 25px 0 13px; color: var(--muted); font-size: 13px; }
   .crumbs a { text-decoration: none; }
   .crumbs span { padding: 0 9px; color: #9aa69d; }
-  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 390px; align-items: center; gap: 44px; padding: 22px 0 42px; }
-  .eyebrow { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 380px; align-items: center; gap: 46px; padding: 24px 0 52px; }
+  .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+  .eyebrow::before { width: 24px; height: 2px; background: var(--rust); content: ''; }
   h1, .prose :global(h2), .prose :global(h3) { font-family: var(--serif); font-weight: 500; letter-spacing: -.025em; }
-  h1 { margin: 15px 0; font-size: clamp(38px, 5vw, 62px); line-height: 1.1; }
-  .dek { color: #52635b; font-family: var(--serif); font-size: 19px; }
-  .byline { color: var(--muted); font-size: 13px; }
-  .hero-image { width: 100%; aspect-ratio: 1.35; object-fit: cover; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 58px; background: var(--green); color: white; }
-  .stats div { padding: 18px 22px; border-right: 1px solid #ffffff35; }
-  .stats div:last-child { border: 0; }
-  .stats span, .stats strong { display: block; }
-  .stats span { color: #c8d8ce; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
-  .stats strong { margin-top: 4px; font-family: var(--serif); font-size: 20px; font-weight: 500; }
-  .article-layout { display: grid; grid-template-columns: 190px minmax(0, 710px); justify-content: center; gap: 58px; padding-bottom: 90px; }
-  .toc { position: sticky; top: 20px; align-self: start; }
-  .toc p { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-  .toc a { display: block; padding: 5px 0 5px 11px; border-left: 1px solid var(--line); color: var(--muted); font-size: 12px; text-decoration: none; }
-  .toc a:hover { border-left: 2px solid var(--rust); color: var(--green); }
+  h1 { max-width: 720px; margin: 19px 0 16px; font-size: clamp(40px, 5vw, 66px); line-height: 1.08; }
+  .dek { max-width: 660px; margin-bottom: 24px; color: #52635b; font-family: var(--serif); font-size: 20px; line-height: 1.5; }
+  .byline { display: flex; align-items: center; gap: 11px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+  .avatar { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #c9d5b2; color: var(--green); font-weight: 700; }
+  .hero-art { position: relative; min-height: 300px; aspect-ratio: 1.12; overflow: hidden; background: #d7dfcf; }
+  .hero-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .art-label { position: absolute; bottom: 15px; left: 15px; padding: 7px 10px; background: var(--white); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 auto 65px; background: var(--green); color: white; }
+  .stat { padding: 21px 26px; border-right: 1px solid #ffffff35; }
+  .stat:last-child { border: 0; }
+  .stat-label, .stat-value { display: block; }
+  .stat-label { color: #c8d8ce; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+  .stat-value { margin-top: 6px; font-family: var(--serif); font-size: 23px; font-weight: 500; line-height: 1.2; }
+  .article-layout { display: grid; grid-template-columns: 205px minmax(0, 710px); justify-content: center; gap: 68px; padding-bottom: 90px; }
+  .toc { position: sticky; top: 24px; align-self: start; padding-top: 8px; }
+  .toc-title { margin-bottom: 13px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+  .toc a { display: block; padding: 6px 0 6px 12px; border-left: 1px solid var(--line); color: var(--muted); font-size: 13px; text-decoration: none; }
+  .toc a:hover, .toc a:first-of-type { padding-left: 11px; border-left: 2px solid var(--rust); color: var(--green); }
   .prose { min-width: 0; color: #283a33; }
-  .prose :global(p), .prose :global(li) { font-family: var(--serif); font-size: 17px; line-height: 1.8; }
-  .prose :global(h2) { margin: 50px 0 15px; font-size: 32px; line-height: 1.2; scroll-margin-top: 20px; }
-  .prose :global(h3) { margin: 30px 0 10px; font-size: 22px; }
-  .prose :global(blockquote) { margin: 30px 0; padding: 8px 0 8px 22px; border-left: 3px solid var(--rust); color: var(--green); font-family: var(--serif); font-size: 22px; line-height: 1.55; }
+  .prose :global(p), .prose :global(li) { font-family: var(--serif); font-size: 18px; line-height: 1.82; }
+  .prose :global(p) { margin-bottom: 23px; }
+  .prose :global(h2) { margin: 59px 0 18px; font-size: 34px; line-height: 1.2; scroll-margin-top: 24px; }
+  .prose :global(h3) { margin: 32px 0 10px; font-size: 23px; }
+  .prose :global(blockquote) { margin: 34px 0; padding: 9px 0 9px 23px; border-left: 3px solid var(--rust); color: var(--green); font-family: var(--serif); font-size: 24px; line-height: 1.55; }
   .prose :global(img) { width: 100%; height: auto; margin-top: 30px; }
-  .prose :global(table) { width: 100%; margin: 24px 0; border-collapse: collapse; font-family: 'DM Sans', sans-serif; font-size: 13px; }
-  .prose :global(th), .prose :global(td) { padding: 10px 7px; border-bottom: 1px solid var(--line); text-align: left; }
-  .prose :global(th) { color: var(--muted); font-weight: 500; }
-  .prose :global(iframe) { width: 100%; max-width: 100%; margin: 15px 0; border: 0; }
+  .prose :global(p:has(> img)) { margin-bottom: 10px; }
+  .prose :global(table) { width: 100%; margin: 28px 0 35px; border-collapse: collapse; font-family: 'DM Sans', sans-serif; font-size: 14px; }
+  .prose :global(th), .prose :global(td) { padding: 11px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  .prose :global(th) { width: 45%; color: var(--muted); font-weight: 500; }
+  .prose :global(iframe) { width: 100%; height: 340px; max-width: 100%; margin: 15px 0; border: 0; background: #e4e9df; }
   .prose :global(a) { color: var(--green); }
-  @media (max-width: 800px) { .hero { grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; } .article-layout { grid-template-columns: 155px minmax(0, 1fr); gap: 28px; } .stats div { padding: 15px; } }
+  @media (max-width: 850px) { .hero { grid-template-columns: minmax(0, 1fr) 300px; gap: 25px; } .article-layout { grid-template-columns: 165px minmax(0, 1fr); gap: 36px; } .stats { margin-bottom: 48px; } .stat { padding: 18px 15px; } }
   @media (max-width: 650px) {
-    .hero { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 18px; padding-bottom: 28px; }
-    .hero-image { aspect-ratio: 1.55; }
-    .stats { grid-template-columns: repeat(2, 1fr); margin-bottom: 38px; }
-    .stats div:nth-child(2) { border-right: 0; }
-    .article-layout { display: block; padding-bottom: 58px; }
-    .toc { position: static; margin-bottom: 32px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-    .toc a { display: inline-block; margin: 0 9px 5px 0; padding: 4px 0; border: 0; }
-    .prose :global(p), .prose :global(li) { font-size: 16px; }
-    .prose :global(h2) { margin-top: 40px; font-size: 29px; }
+    .hero { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 22px; padding: 14px 0 32px; }
+    .hero-art { min-height: 0; aspect-ratio: 1.55; }
+    .stats { grid-template-columns: repeat(2, 1fr); margin-bottom: 40px; }
+    .stat { padding: 15px 17px; border-bottom: 1px solid #ffffff35; }
+    .stat:nth-child(2) { border-right: 0; }
+    .stat:nth-child(3) { border-bottom: 0; }
+    .stat-value { font-size: 21px; }
+    .article-layout { display: block; padding-bottom: 55px; }
+    .toc { position: static; margin-bottom: 35px; padding: 0 0 18px; border-bottom: 1px solid var(--line); }
+    .toc a { display: inline-block; margin: 0 10px 5px 0; padding: 5px 10px 5px 0; border: 0; border-bottom: 1px solid var(--line); }
+    .toc a:first-of-type { padding-left: 0; border-left: 0; }
+    .prose :global(p), .prose :global(li) { font-size: 17px; line-height: 1.75; }
+    .prose :global(h2) { margin-top: 46px; font-size: 30px; }
+    .prose :global(blockquote) { font-size: 21px; }
+    .prose :global(iframe) { height: 280px; }
   }
 </style>
